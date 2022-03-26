@@ -10,21 +10,51 @@ import {
 } from "react-bootstrap";
 import "./CreateFlow.css";
 import { ethers } from "ethers";
-import abi from "./utils/TradeableCashflow.json";
+import abi from "./utils/StreamFlow.json";
 
 // let account;
 
 //where the Superfluid logic takes place
-async function createNewFlow(recipient, flowRate) {
+
+// creating a new flow when posted the doubt for the first time.
+async function createNewFlow(recipient, doubt_heading, doubt_description, doubt_due, flowRate, contractaddress, contractAbi) {
+
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
   const chainId = await window.ethereum.request({ method: "eth_chainId" });
+  const { ethereum } = window;
+  try {
+    if (ethereum) {
+      const streamFlowContract = new ethers.Contract(
+        contractaddress,
+        contractAbi,
+        signer
+      );
+      const doubtTxn = await streamFlowContract.writeDoubt(
+        doubt_heading,
+        doubt_description,
+        doubt_due,
+        flowRate,
+        {gasLimit: 300000}
+      );
+      console.log("Mining...", doubtTxn.hash);
+      await doubtTxn.wait();
+  
+      console.log("Mined -- ", doubtTxn.hash);
+  
+    } else {
+      console.log("Ethereum Object doesnot exist");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
   const sf = await Framework.create({
     chainId: Number(chainId),
     provider: provider
   });
 
-  const DAIx = "0x745861AeD1EEe363b4AaA5F1994Be40b1e05Ff90";
+  const DAIx = "0x745861AeD1EEe363b4AaA5F1994Be40b1e05Ff90"; // DAIx address for Rinkeby
 
   try {
     const createFlowOperation = sf.cfaV1.createFlow({
@@ -57,14 +87,62 @@ async function createNewFlow(recipient, flowRate) {
   }
 }
 
+async function updateExistingFlow(recipient, flowRate) {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = provider.getSigner();
+  const chainId = await window.ethereum.request({ method: "eth_chainId" });
+  const sf = await Framework.create({
+    chainId: Number(chainId),
+    provider: provider
+  });
+
+  const DAIx = "0x745861AeD1EEe363b4AaA5F1994Be40b1e05Ff90";
+  
+  try {
+    const updateFlowOperation = sf.cfaV1.updateFlow({
+      receiver: recipient,
+      flowRate: flowRate,
+      superToken: DAIx
+      // userData?: string
+    });
+
+    console.log("Creating your stream...");
+
+    const result = await updateFlowOperation.exec(signer);
+    console.log(result);
+
+    console.log(
+      `Congrats - you've just updated a money stream!
+    View Your Stream At: https://app.superfluid.finance/dashboard/${recipient}
+    Network: Rinkeby
+    Super Token: DAIx
+    Sender: 0xDCB45e4f6762C3D7C61a00e96Fb94ADb7Cf27721
+    Receiver: ${recipient},
+    FlowRate: ${flowRate}
+    `
+    );
+  } catch (error) {
+    console.log(
+      "Hmmm, your transaction threw an error. Make sure that this stream does not already exist, and that you've entered a valid Ethereum address!"
+    );
+    console.error(error);
+  }
+  
+}
+
+
+
 export const CreateFlow = () => {
   const [recipient, setRecipient] = useState("");
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [flowRate, setFlowRate] = useState("");
   const [flowRateDisplay, setFlowRateDisplay] = useState("");
   const [currentAccount, setCurrentAccount] = useState("");
+  const [doubt_heading, setDoubtHeading] = useState("");
+  const [doubt_description, setDoubtDescription] = useState("");
+  const [doubt_due, setDoubtDue] = useState(0);
 
-  const contractaddress = "0x548B4D0fE89eF3B62e4daf5a363849cC20190E6D";
+  const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
   const contractAbi = abi.abi;
 
   const connectWallet = async () => {
@@ -154,20 +232,46 @@ export const CreateFlow = () => {
     setFlowRateDisplay(newFlowRateDisplay.toString());
   };
 
+  const handleDoubtHeading = (e) => {
+    setDoubtHeading(() => ([e.target.name] = e.target.value));    
+    console.log(doubt_heading);
+  }
+  const handleDoubtDescription = (e) => {
+    setDoubtDescription(() => ([e.target.name] = e.target.value));
+  }
+  const handleDoubtDue = (e) => {
+    setDoubtDue(() => ([e.target.name] = e.target.value));
+  }
+
   const getCurrentReceiver = async () => {
     const { ethereum } = window;
     if (ethereum) {
       const provider = new ethers.providers.Web3Provider(ethereum);
       const signer = provider.getSigner();
-      const tradeableCashflowContract = new ethers.Contract(
+      const streamFlowContract = new ethers.Contract(
         contractaddress,
         contractAbi,
         signer
       );
-      const current_receiver = await tradeableCashflowContract.currentReceiver();
+      const current_receiver = await streamFlowContract.currentReceiver();
       console.log(current_receiver);
     }
   };
+
+  const getDoubt = async () => {
+    const { ethereum } = window;
+    if (ethereum) {
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      const signer = provider.getSigner();
+      const streamFlowContract = new ethers.Contract(
+        contractaddress,
+        contractAbi,
+        signer
+      );
+      const posted_doubt = await streamFlowContract.readDoubts(0);
+      console.log(posted_doubt);
+  }
+}
 
   return (
     <div>
@@ -184,7 +288,7 @@ export const CreateFlow = () => {
         </Card>
       )}
       <Form>
-        <FormGroup className="mb-3">
+        <FormGroup class="mb-3">
           <FormControl
             name="recipient"
             value={recipient}
@@ -200,16 +304,16 @@ export const CreateFlow = () => {
             placeholder="Enter a flowRate in wei/second"
           ></FormControl>
         </FormGroup>
+        
         <CreateButton
           onClick={() => {
             setIsButtonLoading(true);
-            createNewFlow(recipient, flowRate);
+            updateExistingFlow(recipient, flowRate);
             setTimeout(() => {
               setIsButtonLoading(false);
             }, 1000);
-          }}
-        >
-          Click to Create Your Stream
+          }}>
+            Update Stream Flow
         </CreateButton>
       </Form>
 
@@ -229,6 +333,49 @@ export const CreateFlow = () => {
           </p>
         </div>
       </div>
+
+      <Form>
+        <FormGroup class="mb-3">
+          <FormControl
+              name="doubt_heading"
+              value={doubt_heading}
+              onChange={handleDoubtHeading}
+              placeholder="Enter the doubt heading"
+            ></FormControl>
+        </FormGroup>
+        <FormGroup class="mb-3">
+          <FormControl
+              name="doubt_description"
+              value={doubt_description}
+              onChange={handleDoubtDescription}
+              placeholder="Enter the doubt description"
+            ></FormControl>
+        </FormGroup>
+        <FormGroup class="mb-3">
+          <FormControl
+              name="doubt_due"
+              value={doubt_due}
+              onChange={handleDoubtDue}
+              placeholder="Enter the doubt due days"
+            ></FormControl>
+        </FormGroup>
+        <CreateButton
+          onClick={() => {
+            setIsButtonLoading(true);
+            createNewFlow(recipient, doubt_heading, doubt_description, doubt_due, flowRate, contractaddress, contractAbi);
+            setTimeout(() => {
+              setIsButtonLoading(false);
+            }, 1000);
+          }}
+        >
+          Click to Create Your Stream
+        </CreateButton>
+      </Form>
+
+      <div className="button">
+        <button onClick={getDoubt}>Get the first doubt</button>
+      </div>
+
     </div>
   );
 };
