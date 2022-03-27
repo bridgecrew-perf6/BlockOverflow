@@ -10,7 +10,8 @@ import {
 } from "react-bootstrap";
 import "./CreateFlow.css";
 import { ethers } from "ethers";
-import abi from "./utils/StreamFlow.json";
+// import abi from "./utils/StreamFlow.json";
+import abi from "./utils/TestFlow.json";
 
 // let account;
 
@@ -146,8 +147,11 @@ export const CreateFlow = () => {
   const [doubt_description, setDoubtDescription] = useState("");
   const [doubt_due, setDoubtDue] = useState(0);
 
-  const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
-  const contractAbi = abi.abi;
+  // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
+  const contractaddress = ""; // this is only for testing. Use the above one while submitting the proejct.
+
+  // const contractAbi = abi.abi; // use this while submitting the project.
+  const contractAbi = abi; // this is only for testing usign remix
 
   const connectWallet = async () => {
     try {
