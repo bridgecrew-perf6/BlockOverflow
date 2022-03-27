@@ -8,6 +8,7 @@ import {
   Spinner,
   Card
 } from "react-bootstrap";
+import Modal from "react-bootstrap/Modal";
 import "./CreateFlow.css";
 import { ethers } from "ethers";
 // import abi from "./utils/StreamFlow.json";
@@ -117,6 +118,7 @@ export const CreateFlow = () => {
   const [doubt_description, setDoubtDescription] = useState("");
   const [doubt_due, setDoubtDue] = useState(0);
   const [allDoubts, setAllDoubts] = useState([]);
+  const [isOpen, setIsOpen] = useState(false); // for the modal
 
   // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
   const contractaddress = "0x91e42842F02982B7f7Aa0CA980F43C30c89742bD"; // this is only for testing. Use the above one while submitting the proejct.
@@ -274,7 +276,7 @@ export const CreateFlow = () => {
 
   useEffect(() => {
     let streamFlowContract;
-
+    // event fired on successful posting of a new Doubt
     const onNewDoubt = (from, masterIndex, heading, description) => {
       console.log("NewDoubt", from, masterIndex, heading);
       setAllDoubts(prevState => [
@@ -304,7 +306,7 @@ export const CreateFlow = () => {
   }, [allDoubts, contractAbi]);
 
   
-
+  // function to post a doubt
   const postADoubt = async () => {
     const { ethereum } = window;
     try {
@@ -334,6 +336,13 @@ export const CreateFlow = () => {
       console.log(error);
     }
   }
+
+  const showModal = () => {
+    setIsOpen(true);
+  };
+  const hideModal = () => {
+    setIsOpen(false);
+  };
 
 
   return (
@@ -450,6 +459,29 @@ export const CreateFlow = () => {
       <div className="button">
         <button onClick={getDoubt}>Get the first doubt</button>
       </div>
+
+
+      {/* making modal */}
+
+      <button onClick = {showModal}>Display Modal</button>
+        
+      <Modal show={isOpen} onHide = {hideModal}>
+        <Modal.Header>
+          <Modal.Title>Modal title</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <p>Modal body text goes here.</p>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <button onClick={hideModal}>Cancle</button>
+          <button>Save</button>
+        </Modal.Footer>
+      </Modal>
+      
+
+
 
       {allDoubts.map((doubt, index) => {
         return (

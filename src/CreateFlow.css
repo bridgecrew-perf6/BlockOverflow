@@ -26,4 +26,13 @@
     margin-right: 40%;
     margin-bottom: 3%;
   }
-  
+
+  div.fade.model.show {
+    display: contents;
+  }
+  .modal-dialog {
+    border-color: blue;
+    padding: 7%;
+    text-align: center;
+
+  }
