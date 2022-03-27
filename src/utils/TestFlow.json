@@ -235,6 +235,19 @@
 	{
 		"inputs": [
 			{
+				"internalType": "address",
+				"name": "_doubtPoster",
+				"type": "address"
+			}
+		],
+		"name": "setReceiver",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "uint256",
 				"name": "doubtIndex",
 				"type": "uint256"
@@ -408,6 +421,19 @@
 				"internalType": "contract IConstantFlowAgreementV1",
 				"name": "cfa",
 				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "checkIfInflowExists",
+		"outputs": [
+			{
+				"internalType": "int96",
+				"name": "",
+				"type": "int96"
 			}
 		],
 		"stateMutability": "view",

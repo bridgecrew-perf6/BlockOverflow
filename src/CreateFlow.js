@@ -19,7 +19,7 @@ import abi from "./utils/TestFlow.json";
 //where the Superfluid logic takes place
 
 // creating a new flow when posted the doubt for the first time.
-async function createNewFlow(recipient, flowRate, contractaddress, contractAbi) {
+async function createNewFlow(recipient, flowRate) {
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
@@ -82,7 +82,7 @@ async function updateExistingFlow(recipient, flowRate) {
       // userData?: string
     });
 
-    console.log("Creating your stream...");
+    console.log("Updating your stream...");
 
     const result = await updateFlowOperation.exec(signer);
     console.log(result);
@@ -120,8 +120,9 @@ export const CreateFlow = () => {
   const [allDoubts, setAllDoubts] = useState([]);
   const [isOpen, setIsOpen] = useState(false); // for the modal
 
+
   // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
-  const contractaddress = "0x91e42842F02982B7f7Aa0CA980F43C30c89742bD"; // this is only for testing. Use the above one while submitting the proejct.
+  const contractaddress = "0x381aA7906FC6A1D9e5dAc529C3e153e6D718816e"; // this is only for testing. Use the above one while submitting the proejct.
 
   // const contractAbi = abi.abi; // use this while submitting the project.
   const contractAbi = abi; // this is only for testing usign remix
@@ -322,13 +323,18 @@ export const CreateFlow = () => {
           doubt_heading,
           doubt_description,
           doubt_due,
-          flowRate,
-          {gasLimit: 300000}
+          flowRate
         );
         console.log("Mining...", doubtTxn.hash);
         await doubtTxn.wait();
-        console.log("Mined -- ", doubtTxn.hash);
-        getDoubt();
+        console.log("Mined -- ", doubtTxn.hash); // doubt posted
+        await getDoubt();
+        const transactionExist = await streamFlowContract.checkIfInflowExists();
+        if (transactionExist.toNumber() > 0) {
+          updateExistingFlow(contractaddress, transactionExist.toNumber() + flowRate);
+        }
+        createNewFlow(contractaddress, flowRate);
+
       } else {
         console.log("Ethereum Object doesnot exist");
       }
@@ -380,7 +386,7 @@ export const CreateFlow = () => {
         <CreateButton
           onClick={() => {
             setIsButtonLoading(true);
-            updateExistingFlow(recipient, flowRate);
+            updateExistingFlow(contractaddress, flowRate);
             setTimeout(() => {
               setIsButtonLoading(false);
             }, 1000);
@@ -434,7 +440,7 @@ export const CreateFlow = () => {
         <CreateButton
           onClick={() => {
             setIsButtonLoading(true);
-            createNewFlow(recipient, flowRate, contractaddress, contractAbi);
+            createNewFlow(contractaddress, flowRate);
             setTimeout(() => {
               setIsButtonLoading(false);
             }, 1000);
@@ -479,9 +485,6 @@ export const CreateFlow = () => {
           <button>Save</button>
         </Modal.Footer>
       </Modal>
-      
-
-
 
       {allDoubts.map((doubt, index) => {
         return (
