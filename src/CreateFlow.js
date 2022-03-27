@@ -146,9 +146,10 @@ export const CreateFlow = () => {
   const [doubt_heading, setDoubtHeading] = useState("");
   const [doubt_description, setDoubtDescription] = useState("");
   const [doubt_due, setDoubtDue] = useState(0);
+  const [allDoubts, setAllDoubts] = useState([]);
 
   // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
-  const contractaddress = ""; // this is only for testing. Use the above one while submitting the proejct.
+  const contractaddress = "0x456b5975fE4e422786a78962e64Ae992D137f54c"; // this is only for testing. Use the above one while submitting the proejct.
 
   // const contractAbi = abi.abi; // use this while submitting the project.
   const contractAbi = abi; // this is only for testing usign remix
@@ -268,19 +269,33 @@ export const CreateFlow = () => {
 
   const getDoubt = async () => {
     const { ethereum } = window;
-    if (ethereum) {
-      const provider = new ethers.providers.Web3Provider(ethereum);
-      const signer = provider.getSigner();
-      const streamFlowContract = new ethers.Contract(
-        contractaddress,
-        contractAbi,
-        signer
-      );
-      const posted_doubt = await streamFlowContract.readDoubts(0);
-      console.log(posted_doubt.quesId.toNumber());
-      console.log(posted_doubt.bounty.toNumber());
-      console.log(posted_doubt.maxUpvote.toNumber());
-      console.log(posted_doubt.heading);
+    try {
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const streamFlowContract = new ethers.Contract(
+          contractaddress,
+          contractAbi,
+          signer
+        );
+        const postedDoubts = await streamFlowContract.readDoubts();
+        const postedDoubtsCleaned = postedDoubts.map(postedDoubt => {
+          return {
+            address: postedDoubt.posterAddress,
+            quesId: postedDoubt.quesId,
+            heading: postedDoubt.heading,
+            description: postedDoubt.description
+          };
+        });
+        setAllDoubts(postedDoubtsCleaned);
+        console.log(allDoubts);
+        
+    } else {
+      console.log("No Ethereum object found");
+    }
+  } catch (error) {
+    console.log("There was some error while reading the Doubts");
+    console.log(error);
   }
 }
 

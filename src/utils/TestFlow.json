@@ -2,45 +2,6 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"internalType": "contract ISuperfluid",
-				"name": "host",
-				"type": "address"
-			},
-			{
-				"internalType": "contract IConstantFlowAgreementV1",
-				"name": "cfa",
-				"type": "address"
-			},
-			{
-				"internalType": "contract ISuperToken",
-				"name": "acceptedToken",
-				"type": "address"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "receiver",
-				"type": "address"
-			}
-		],
-		"name": "ReceiverChanged",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
 				"internalType": "contract ISuperToken",
 				"name": "_superToken",
 				"type": "address"
@@ -191,6 +152,104 @@
 	{
 		"inputs": [
 			{
+				"internalType": "address",
+				"name": "newWinner",
+				"type": "address"
+			}
+		],
+		"name": "changeWinner",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "contract ISuperfluid",
+				"name": "host",
+				"type": "address"
+			},
+			{
+				"internalType": "contract IConstantFlowAgreementV1",
+				"name": "cfa",
+				"type": "address"
+			},
+			{
+				"internalType": "contract ISuperToken",
+				"name": "acceptedToken",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			}
+		],
+		"name": "ReceiverChanged",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "doubtIndex",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "ansIndex",
+				"type": "uint256"
+			}
+		],
+		"name": "upVote",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_heading",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_description",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_dueDate",
+				"type": "uint256"
+			},
+			{
+				"internalType": "int96",
+				"name": "_bounty",
+				"type": "int96"
+			}
+		],
+		"name": "writeDoubt",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "contract ISuperToken",
 				"name": "",
 				"type": "address"
@@ -324,19 +383,6 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "newWinner",
-				"type": "address"
-			}
-		],
-		"name": "changeWinner",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "currentReceiver",
 		"outputs": [
@@ -413,13 +459,7 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_index",
-				"type": "uint256"
-			}
-		],
+		"inputs": [],
 		"name": "readDoubts",
 		"outputs": [
 			{
@@ -475,82 +515,12 @@
 						"type": "address"
 					}
 				],
-				"internalType": "struct TradeableCashflow.Doubt",
+				"internalType": "struct TradeableCashflow.Doubt[]",
 				"name": "",
-				"type": "tuple"
+				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "doubtIndex",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "ansIndex",
-				"type": "uint256"
-			}
-		],
-		"name": "upVote",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "int96",
-				"name": "bounty",
-				"type": "int96"
-			}
-		],
-		"name": "updateContractInflow",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_heading",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_description",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_dueDate",
-				"type": "uint256"
-			},
-			{
-				"internalType": "int96",
-				"name": "_bounty",
-				"type": "int96"
-			}
-		],
-		"name": "writeDoubt",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	}
 ]
