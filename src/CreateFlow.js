@@ -168,6 +168,7 @@ export const CreateFlow = () => {
       // Setup listener! This is for the case where a user comes to our site
       // and ALREADY had their wallet connected + authorized.
       // setupEventListener()
+      getDoubt();
     } else {
       console.log("No authorized account found");
     }
