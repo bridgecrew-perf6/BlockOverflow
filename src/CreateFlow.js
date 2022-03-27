@@ -450,6 +450,17 @@ export const CreateFlow = () => {
         <button onClick={getDoubt}>Get the first doubt</button>
       </div>
 
+      {allDoubts.map((doubt, index) => {
+        return (
+          <div key = {index}>
+            <div>Address: {doubt.address}</div>
+            <div>Heading: {doubt.heading}</div>
+            <div>Description: {doubt.description}</div>
+            <div>Ques_ID: {doubt.quesId.toString()}</div>
+          </div>
+        )
+      })}
+
     </div>
   );
 };
