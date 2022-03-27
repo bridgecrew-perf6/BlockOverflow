@@ -119,10 +119,12 @@ export const CreateFlow = () => {
   const [doubt_due, setDoubtDue] = useState(0);
   const [allDoubts, setAllDoubts] = useState([]);
   const [isOpen, setIsOpen] = useState(false); // for the modal
+  const [answerBody, setAnswerBody] = useState("");
+  const [allAnswers, setAllAnswers] = useState([]);
 
 
   // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
-  const contractaddress = "0x381aA7906FC6A1D9e5dAc529C3e153e6D718816e"; // this is only for testing. Use the above one while submitting the proejct.
+  const contractaddress = "0xDF0aE6eC9F44a7cBDdb066b2235d9773247CFe4b"; // this is only for testing. Use the above one while submitting the proejct.
 
   // const contractAbi = abi.abi; // use this while submitting the project.
   const contractAbi = abi; // this is only for testing usign remix
@@ -226,6 +228,11 @@ export const CreateFlow = () => {
     setDoubtDue(() => ([e.target.name] = e.target.value));
   }
 
+  // for answers
+  const handleAnswers = (e) => {
+    setAnswerBody(() => ([e.target.name] = e.target.value));
+  }
+
   const getCurrentReceiver = async () => {
     const { ethereum } = window;
     if (ethereum) {
@@ -274,6 +281,36 @@ export const CreateFlow = () => {
     console.log(error);
   }
 }
+
+  const getAnswer = async () => {
+    const { ethereum } = window;
+    try {
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const streamFlowContract = new ethers.Contract(
+          contractaddress,
+          contractAbi,
+          signer
+        );
+        const postedAnswers = await streamFlowContract.readAnsS(0);
+        const postedAnswersCleaned = postedAnswers.map(postedAnswer => {
+          return {
+            address: postedAnswer.answerer,
+            ansId: postedAnswer.ansId.toNumber(),
+            answerbody: postedAnswer.ans,
+            upvotes: postedAnswer.upvotes.toNumber()
+          };
+        });
+        setAllAnswers(postedAnswersCleaned);
+        console.log(postedAnswersCleaned);
+      } else {
+        console.log("Etereum Object not found");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   useEffect(() => {
     let streamFlowContract;
@@ -337,6 +374,32 @@ export const CreateFlow = () => {
 
       } else {
         console.log("Ethereum Object doesnot exist");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const postAnswer = async () => {
+    const { ethereum } = window;
+    try {
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const streamFlowContract = new ethers.Contract(
+          contractaddress,
+          contractAbi,
+          signer
+        );
+        const answerTxn = await streamFlowContract.answerDoubt(
+          answerBody,
+          doubt_due,
+        );
+        console.log("Mining...", answerTxn.hash);
+        await answerTxn.wait();
+        console.log("Mined -- ", answerTxn.hash); // answer posted
+      } else {
+        console.log("Ethereum object not found");
       }
     } catch (error) {
       console.log(error);
@@ -466,6 +529,10 @@ export const CreateFlow = () => {
         <button onClick={getDoubt}>Get the first doubt</button>
       </div>
 
+      <div className="answer">
+        <button onClick={getAnswer}>Get the answer of first doubt</button>
+      </div>
+
 
       {/* making modal */}
 
@@ -478,11 +545,36 @@ export const CreateFlow = () => {
 
         <Modal.Body>
           <p>Modal body text goes here.</p>
+          <Form>
+            <FormGroup className="mb-3">
+              <FormControl
+                name="answerBody"
+                value={answerBody}
+                onChange={handleAnswers}
+                placeholder="Enter the answer for this doubt"
+              ></FormControl>
+              <FormControl
+                name="doubt_due"
+                value = {doubt_due}
+                onChange={handleDoubtDue}
+                placeholder = "Enter the doubt number which you want to answer"></FormControl>
+            </FormGroup>
+          </Form>
         </Modal.Body>
 
         <Modal.Footer>
           <button onClick={hideModal}>Cancle</button>
-          <button>Save</button>
+          <CreateButton
+          onClick={() => {
+            setIsButtonLoading(true);
+            postAnswer();
+            setTimeout(() => {
+              setIsButtonLoading(false);
+            }, 1000);
+          }}
+        >
+          Post an Answer
+        </CreateButton>
         </Modal.Footer>
       </Modal>
 

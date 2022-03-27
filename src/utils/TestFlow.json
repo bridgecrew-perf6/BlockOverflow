@@ -475,11 +475,6 @@
 				"internalType": "uint256",
 				"name": "_index",
 				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_ansIndex",
-				"type": "uint256"
 			}
 		],
 		"name": "readAnsS",
@@ -507,9 +502,9 @@
 						"type": "uint256"
 					}
 				],
-				"internalType": "struct TradeableCashflow.Answer",
+				"internalType": "struct TradeableCashflow.Answer[]",
 				"name": "",
-				"type": "tuple"
+				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",
