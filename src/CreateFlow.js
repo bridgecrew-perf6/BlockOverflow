@@ -39,8 +39,12 @@ async function createNewFlow(recipient, doubt_heading, doubt_description, doubt_
       );
       console.log("Mining...", doubtTxn.hash);
       await doubtTxn.wait();
-  
       console.log("Mined -- ", doubtTxn.hash);
+      let myDoubt = streamFlowContract.readDoubts(0);
+      console.log(myDoubt.quesId.toNumber());
+      console.log(myDoubt.bounty.toNumber());
+      console.log(myDoubt.maxUpvote.toNumber());
+      console.log(myDoubt.heading);
   
     } else {
       console.log("Ethereum Object doesnot exist");
@@ -269,7 +273,10 @@ export const CreateFlow = () => {
         signer
       );
       const posted_doubt = await streamFlowContract.readDoubts(0);
-      console.log(posted_doubt);
+      console.log(posted_doubt.quesId.toNumber());
+      console.log(posted_doubt.bounty.toNumber());
+      console.log(posted_doubt.maxUpvote.toNumber());
+      console.log(posted_doubt.heading);
   }
 }
 
