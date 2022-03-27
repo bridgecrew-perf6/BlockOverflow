@@ -18,41 +18,11 @@ import abi from "./utils/TestFlow.json";
 //where the Superfluid logic takes place
 
 // creating a new flow when posted the doubt for the first time.
-async function createNewFlow(recipient, doubt_heading, doubt_description, doubt_due, flowRate, contractaddress, contractAbi) {
+async function createNewFlow(recipient, flowRate, contractaddress, contractAbi) {
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
   const chainId = await window.ethereum.request({ method: "eth_chainId" });
-  const { ethereum } = window;
-  try {
-    if (ethereum) {
-      const streamFlowContract = new ethers.Contract(
-        contractaddress,
-        contractAbi,
-        signer
-      );
-      const doubtTxn = await streamFlowContract.writeDoubt(
-        doubt_heading,
-        doubt_description,
-        doubt_due,
-        flowRate,
-        {gasLimit: 300000}
-      );
-      console.log("Mining...", doubtTxn.hash);
-      await doubtTxn.wait();
-      console.log("Mined -- ", doubtTxn.hash);
-      let myDoubt = streamFlowContract.readDoubts(0);
-      console.log(myDoubt.quesId.toNumber());
-      console.log(myDoubt.bounty.toNumber());
-      console.log(myDoubt.maxUpvote.toNumber());
-      console.log(myDoubt.heading);
-  
-    } else {
-      console.log("Ethereum Object doesnot exist");
-    }
-  } catch (error) {
-    console.log(error);
-  }
 
   const sf = await Framework.create({
     chainId: Number(chainId),
@@ -149,7 +119,7 @@ export const CreateFlow = () => {
   const [allDoubts, setAllDoubts] = useState([]);
 
   // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
-  const contractaddress = "0x456b5975fE4e422786a78962e64Ae992D137f54c"; // this is only for testing. Use the above one while submitting the proejct.
+  const contractaddress = "0x91e42842F02982B7f7Aa0CA980F43C30c89742bD"; // this is only for testing. Use the above one while submitting the proejct.
 
   // const contractAbi = abi.abi; // use this while submitting the project.
   const contractAbi = abi; // this is only for testing usign remix
@@ -267,6 +237,7 @@ export const CreateFlow = () => {
     }
   };
 
+  // Get all the doubts
   const getDoubt = async () => {
     const { ethereum } = window;
     try {
@@ -282,13 +253,14 @@ export const CreateFlow = () => {
         const postedDoubtsCleaned = postedDoubts.map(postedDoubt => {
           return {
             address: postedDoubt.posterAddress,
-            quesId: postedDoubt.quesId,
+            quesId: postedDoubt.quesId.toNumber(),
             heading: postedDoubt.heading,
             description: postedDoubt.description
           };
         });
         setAllDoubts(postedDoubtsCleaned);
-        console.log(allDoubts);
+        console.log(postedDoubtsCleaned);
+        // console.log(allDoubts);
         
     } else {
       console.log("No Ethereum object found");
@@ -298,6 +270,70 @@ export const CreateFlow = () => {
     console.log(error);
   }
 }
+
+  useEffect(() => {
+    let streamFlowContract;
+
+    const onNewDoubt = (from, masterIndex, heading, description) => {
+      console.log("NewDoubt", from, masterIndex, heading);
+      setAllDoubts(prevState => [
+        ...prevState,
+        {
+          address: from,
+          quesId: masterIndex.toNumber(),
+          heading: heading,
+          description: description
+        },
+      ]);
+      console.log(allDoubts);
+    };
+
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      streamFlowContract = new ethers.Contract(contractaddress, contractAbi, signer);
+      streamFlowContract = new ethers.providers.Web3Provider(window.ethereum);
+      streamFlowContract.on("NewDoubt", onNewDoubt)
+    }
+    return () => {
+      if (streamFlowContract) {
+        streamFlowContract.off("NewDoubt", onNewDoubt);
+      }
+    };
+  }, [allDoubts, contractAbi]);
+
+  
+
+  const postADoubt = async () => {
+    const { ethereum } = window;
+    try {
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const streamFlowContract = new ethers.Contract(
+          contractaddress,
+          contractAbi,
+          signer
+        );
+        const doubtTxn = await streamFlowContract.writeDoubt(
+          doubt_heading,
+          doubt_description,
+          doubt_due,
+          flowRate,
+          {gasLimit: 300000}
+        );
+        console.log("Mining...", doubtTxn.hash);
+        await doubtTxn.wait();
+        console.log("Mined -- ", doubtTxn.hash);
+        getDoubt();
+      } else {
+        console.log("Ethereum Object doesnot exist");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
 
   return (
     <div>
@@ -388,13 +424,25 @@ export const CreateFlow = () => {
         <CreateButton
           onClick={() => {
             setIsButtonLoading(true);
-            createNewFlow(recipient, doubt_heading, doubt_description, doubt_due, flowRate, contractaddress, contractAbi);
+            createNewFlow(recipient, flowRate, contractaddress, contractAbi);
             setTimeout(() => {
               setIsButtonLoading(false);
             }, 1000);
           }}
         >
           Click to Create Your Stream
+        </CreateButton>
+
+        <CreateButton
+          onClick={() => {
+            setIsButtonLoading(true);
+            postADoubt();
+            setTimeout(() => {
+              setIsButtonLoading(false);
+            }, 1000);
+          }}
+        >
+          Post a doubt
         </CreateButton>
       </Form>
 
