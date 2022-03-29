@@ -48,9 +48,9 @@ async function createNewFlow(recipient, flowRate) {
     console.log(
       `Congrats - you've just created a money stream!
     View Your Stream At: https://app.superfluid.finance/dashboard/${recipient}
-    Network: Kovan
+    Network: Rinkeby
     Super Token: DAIx
-    Sender: 0xDCB45e4f6762C3D7C61a00e96Fb94ADb7Cf27721
+    Sender: 
     Receiver: ${recipient},
     FlowRate: ${flowRate}
     `
@@ -124,7 +124,7 @@ export const CreateFlow = () => {
 
 
   // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
-  const contractaddress = "0xDF0aE6eC9F44a7cBDdb066b2235d9773247CFe4b"; // this is only for testing. Use the above one while submitting the proejct.
+  const contractaddress = "0xb59fA078a1f15d8f127b6E37596516cB117fe2A3"; // this is only for testing. Use the above one while submitting the proejct.
 
   // const contractAbi = abi.abi; // use this while submitting the project.
   const contractAbi = abi; // this is only for testing usign remix
@@ -293,7 +293,7 @@ export const CreateFlow = () => {
           contractAbi,
           signer
         );
-        const postedAnswers = await streamFlowContract.readAnsS(0);
+        const postedAnswers = await streamFlowContract.readAnsS(3);
         const postedAnswersCleaned = postedAnswers.map(postedAnswer => {
           return {
             address: postedAnswer.answerer,
@@ -327,7 +327,7 @@ export const CreateFlow = () => {
         },
       ]);
       console.log(allDoubts);
-    };
+    }; // Team name AdEth
 
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -416,7 +416,7 @@ export const CreateFlow = () => {
 
   return (
     <div>
-      <h2>Create a Flow</h2>
+      <h2>BlockOverFlow</h2>
       {currentAccount === "" ? (
         <button id="connectWallet" className="button" onClick={connectWallet}>
           Connect Wallet
@@ -463,12 +463,8 @@ export const CreateFlow = () => {
       </div>
 
       <div className="description">
-        <p>
-          Go to the CreateFlow.js component and look at the <b>createFlow() </b>
-          function to see under the hood
-        </p>
         <div className="calculation">
-          <p>Your flow will be equal to:</p>
+          <p>Bounty flow</p>
           <p>
             <b>${flowRateDisplay !== " " ? flowRateDisplay : 0}</b> DAIx/month
           </p>
@@ -500,7 +496,7 @@ export const CreateFlow = () => {
               placeholder="Enter the doubt due days"
             ></FormControl>
         </FormGroup>
-        <CreateButton
+        {/* <CreateButton
           onClick={() => {
             setIsButtonLoading(true);
             createNewFlow(contractaddress, flowRate);
@@ -510,7 +506,7 @@ export const CreateFlow = () => {
           }}
         >
           Click to Create Your Stream
-        </CreateButton>
+        </CreateButton> */}
 
         <CreateButton
           onClick={() => {
