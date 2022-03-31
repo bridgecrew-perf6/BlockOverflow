@@ -124,7 +124,7 @@ export const CreateFlow = () => {
 
 
   // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
-  const contractaddress = "0xb59fA078a1f15d8f127b6E37596516cB117fe2A3"; // this is only for testing. Use the above one while submitting the proejct.
+  const contractaddress = "0x6CD0CEC942f944A11E00330c9Ad8B81F4cba75da"; // this is only for testing. Use the above one while submitting the proejct.
 
   // const contractAbi = abi.abi; // use this while submitting the project.
   const contractAbi = abi; // this is only for testing usign remix
@@ -366,12 +366,19 @@ export const CreateFlow = () => {
         await doubtTxn.wait();
         console.log("Mined -- ", doubtTxn.hash); // doubt posted
         await getDoubt();
-        const transactionExist = await streamFlowContract.checkIfInflowExists();
-        if (transactionExist.toNumber() > 0) {
-          updateExistingFlow(contractaddress, transactionExist.toNumber() + flowRate);
-        }
+        const transactionExist = await streamFlowContract.checkFlow(currentAccount);
+        // if (transactionExist.toNumber() > 0) {
+        //   try {
+        //     updateExistingFlow(contractaddress, transactionExist + flowRate);
+        //   } catch (error) {
+        //     console.log(error);
+        //     createNewFlow(contractaddress, flowRate);
+        //   }
+        // }
+        // else {
+        //   createNewFlow(contractaddress, flowRate);
+        // }
         createNewFlow(contractaddress, flowRate);
-
       } else {
         console.log("Ethereum Object doesnot exist");
       }
@@ -413,7 +420,7 @@ export const CreateFlow = () => {
     setIsOpen(false);
   };
 
-
+  // UI code
   return (
     <div>
       <h2>BlockOverFlow</h2>
