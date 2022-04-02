@@ -367,18 +367,25 @@ export const CreateFlow = () => {
         console.log("Mined -- ", doubtTxn.hash); // doubt posted
         await getDoubt();
         const transactionExist = await streamFlowContract.checkFlow(currentAccount);
-        // if (transactionExist.toNumber() > 0) {
-        //   try {
-        //     updateExistingFlow(contractaddress, transactionExist + flowRate);
-        //   } catch (error) {
-        //     console.log(error);
-        //     createNewFlow(contractaddress, flowRate);
-        //   }
-        // }
-        // else {
-        //   createNewFlow(contractaddress, flowRate);
-        // }
-        createNewFlow(contractaddress, flowRate);
+        console.log("Transaction raw output" + transactionExist);
+        console.log("Transaction exists with .toNumber function" + transactionExist.toNumber());
+        if (transactionExist.toNumber() > 0) {
+          try {
+            let newflowrate = transactionExist.toNumber() + flowRate;
+            await updateExistingFlow(contractaddress, newflowrate);
+          } catch (error) {
+            console.log("Error for updating flow" + error);
+          }
+          try {
+            await createNewFlow(contractaddress, flowRate);
+          } catch (error) {
+            console.log("Error in creating new flow" + error);
+          }
+        }
+        else {
+          createNewFlow(contractaddress, flowRate);
+        }
+        // createNewFlow(contractaddress, flowRate);
       } else {
         console.log("Ethereum Object doesnot exist");
       }
@@ -412,6 +419,33 @@ export const CreateFlow = () => {
       console.log(error);
     }
   }
+
+  const getAFlow = async () => {
+    const { ethereum } = window;
+    try {
+      if (ethereum) {
+        // const provider = new ethers.providers.Web3Provider(ethereum);
+        const provider = new ethers.providers.AlchemyProvider("rinkeby", "iNNs24vbZthCgoM1DdYfs44KxP-re35d");
+        // const signer = provider.getSigner();
+        const chainId = await window.ethereum.request({ method: "eth_chainId" });
+
+        const sf = await Framework.create({
+          chainId: Number(chainId),
+          provider: provider
+        });
+        const myflow = await sf.cfaV1.getFlow({
+          superToken: "0x745861AeD1EEe363b4AaA5F1994Be40b1e05Ff90",
+          sender: "0xd4C88BDeE3a708d6A13A7aFE3B5f93f1DA5375D8",
+          receiver: "0x6CD0CEC942f944A11E00330c9Ad8B81F4cba75da",
+          providerOrSigner: provider
+        });
+        console.log(myflow); // now getting the flow.
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  
 
   const showModal = () => {
     setIsOpen(true);
@@ -467,6 +501,10 @@ export const CreateFlow = () => {
 
       <div className="button">
         <button onClick={getCurrentReceiver}>Get current Receiver</button>
+      </div>
+
+      <div className="button">
+        <button onClick={getAFlow}>Get A Flow</button>
       </div>
 
       <div className="description">
