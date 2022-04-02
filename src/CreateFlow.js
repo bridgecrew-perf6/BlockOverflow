@@ -121,6 +121,8 @@ export const CreateFlow = () => {
   const [isOpen, setIsOpen] = useState(false); // for the modal
   const [answerBody, setAnswerBody] = useState("");
   const [allAnswers, setAllAnswers] = useState([]);
+  const [currentFlowRate, setCurrentFlowRate] = useState(0);
+  const [currentDeposit, setCurrentDeposit] = useState(0);
 
 
   // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
@@ -366,23 +368,17 @@ export const CreateFlow = () => {
         await doubtTxn.wait();
         console.log("Mined -- ", doubtTxn.hash); // doubt posted
         await getDoubt();
-        const transactionExist = await streamFlowContract.checkFlow(currentAccount);
-        console.log("Transaction raw output" + transactionExist);
-        console.log("Transaction exists with .toNumber function" + transactionExist.toNumber());
-        if (transactionExist.toNumber() > 0) {
+        await getAFlow();
+        // const transactionExist = await streamFlowContract.checkFlow(currentAccount);
+        if (currentFlowRate != 0) {
           try {
-            let newflowrate = transactionExist.toNumber() + flowRate;
-            await updateExistingFlow(contractaddress, newflowrate);
+            let newflowrate = currentFlowRate + Number(flowRate);
+            await updateExistingFlow(contractaddress, newflowrate.toString());
           } catch (error) {
             console.log("Error for updating flow" + error);
           }
-          try {
-            await createNewFlow(contractaddress, flowRate);
-          } catch (error) {
-            console.log("Error in creating new flow" + error);
-          }
         }
-        else {
+        if (currentFlowRate == 0) {
           createNewFlow(contractaddress, flowRate);
         }
         // createNewFlow(contractaddress, flowRate);
@@ -435,11 +431,15 @@ export const CreateFlow = () => {
         });
         const myflow = await sf.cfaV1.getFlow({
           superToken: "0x745861AeD1EEe363b4AaA5F1994Be40b1e05Ff90",
-          sender: "0xd4C88BDeE3a708d6A13A7aFE3B5f93f1DA5375D8",
+          sender: currentAccount.toString(),
           receiver: "0x6CD0CEC942f944A11E00330c9Ad8B81F4cba75da",
           providerOrSigner: provider
         });
         console.log(myflow); // now getting the flow.
+        setCurrentFlowRate(Number(myflow.flowRate));
+        console.log(currentFlowRate)
+        setCurrentDeposit(myflow.deposit);
+
       }
     } catch (error) {
       console.log(error);
