@@ -73,7 +73,7 @@ async function updateExistingFlow(recipient, flowRate) {
   });
 
   const DAIx = "0x745861AeD1EEe363b4AaA5F1994Be40b1e05Ff90";
-  
+
   try {
     const updateFlowOperation = sf.cfaV1.updateFlow({
       receiver: recipient,
@@ -103,7 +103,7 @@ async function updateExistingFlow(recipient, flowRate) {
     );
     console.error(error);
   }
-  
+
 }
 
 
@@ -121,12 +121,10 @@ export const CreateFlow = () => {
   const [isOpen, setIsOpen] = useState(false); // for the modal
   const [answerBody, setAnswerBody] = useState("");
   const [allAnswers, setAllAnswers] = useState([]);
-  const [currentFlowRate, setCurrentFlowRate] = useState(0);
-  const [currentDeposit, setCurrentDeposit] = useState(0);
 
 
   // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
-  const contractaddress = "0xe8468e06F416cca809b48dd3158b3fb957D292B8"; // this is only for testing. Use the above one while submitting the proejct.
+  const contractaddress = "0xFE813CB523B648697637aa7Bf4d062018e2E74c3"; // this is only for testing. Use the above one while submitting the proejct.
 
   // const contractAbi = abi.abi; // use this while submitting the project.
   const contractAbi = abi; // this is only for testing usign remix
@@ -220,7 +218,7 @@ export const CreateFlow = () => {
   };
 
   const handleDoubtHeading = (e) => {
-    setDoubtHeading(() => ([e.target.name] = e.target.value));    
+    setDoubtHeading(() => ([e.target.name] = e.target.value));
     console.log(doubt_heading);
   }
   const handleDoubtDescription = (e) => {
@@ -274,17 +272,18 @@ export const CreateFlow = () => {
         setAllDoubts(postedDoubtsCleaned);
         console.log(postedDoubtsCleaned);
         // console.log(allDoubts);
-        
-    } else {
-      console.log("No Ethereum object found");
-    }
-  } catch (error) {
-    console.log("There was some error while reading the Doubts");
-    console.log(error);
-  }
-}
 
-  const getAnswer = async () => {
+      } else {
+        console.log("No Ethereum object found");
+      }
+    } catch (error) {
+      console.log("There was some error while reading the Doubts");
+      console.log(error);
+    }
+  }
+
+  async function getAnswer(qId) {
+    console.log("getAnswer called with id ", qId);
     const { ethereum } = window;
     try {
       if (ethereum) {
@@ -295,7 +294,7 @@ export const CreateFlow = () => {
           contractAbi,
           signer
         );
-        const postedAnswers = await streamFlowContract.readAnsS(3);
+        const postedAnswers = await streamFlowContract.readAnsS(qId);
         const postedAnswersCleaned = postedAnswers.map(postedAnswer => {
           return {
             address: postedAnswer.answerer,
@@ -313,6 +312,35 @@ export const CreateFlow = () => {
       console.log(error);
     }
   }
+
+  useEffect(() => {
+    let streamFlowContract;
+    const onNewAnswer = (from, answerid, qid, ans, upvotes) => {
+      console.log("New Answer", from, answerid, ans);
+      setAllAnswers(prevState => [
+        ...prevState,
+        {
+          address: from,
+          ansId: answerid.toNumber(),
+          ans: ans,
+          upvotes: upvotes.toNumber()
+        },
+      ]);
+      console.log(allAnswers);
+    };
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      streamFlowContract = new ethers.Contract(contractaddress, contractAbi, signer);
+      streamFlowContract = new ethers.providers.Web3Provider(window.ethereum);
+      streamFlowContract.on("NewUpdateAnswer", onNewAnswer);
+    }
+    return () => {
+      if (streamFlowContract) {
+        streamFlowContract.off("NewUpdateAnswer", onNewAnswer);
+      }
+    };
+  }, [allAnswers, contractAbi]);
 
   useEffect(() => {
     let streamFlowContract;
@@ -336,7 +364,7 @@ export const CreateFlow = () => {
       const signer = provider.getSigner();
       streamFlowContract = new ethers.Contract(contractaddress, contractAbi, signer);
       streamFlowContract = new ethers.providers.Web3Provider(window.ethereum);
-      streamFlowContract.on("NewDoubt", onNewDoubt)
+      streamFlowContract.on("NewDoubt", onNewDoubt);
     }
     return () => {
       if (streamFlowContract) {
@@ -345,7 +373,7 @@ export const CreateFlow = () => {
     };
   }, [allDoubts, contractAbi]);
 
-  
+
   // function to post a doubt
   const postADoubt = async () => {
     const { ethereum } = window;
@@ -368,18 +396,21 @@ export const CreateFlow = () => {
         await doubtTxn.wait();
         console.log("Mined -- ", doubtTxn.hash); // doubt posted
         await getDoubt();
-        await getAFlow();
+        let currentFlowRate = await getAFlow();
+        console.log(currentFlowRate);
         // const transactionExist = await streamFlowContract.checkFlow(currentAccount);
-        if (currentFlowRate != 0) {
-          try {
-            let newflowrate = currentFlowRate + Number(flowRate);
-            await updateExistingFlow(contractaddress, newflowrate.toString());
-          } catch (error) {
-            console.log("Error for updating flow" + error);
+        if (flowRate > 0) {
+          if (currentFlowRate != 0) {
+            try {
+              let newflowrate = currentFlowRate + Number(flowRate);
+              await updateExistingFlow(contractaddress, newflowrate.toString());
+            } catch (error) {
+              console.log("Error for updating flow" + error);
+            }
           }
-        }
-        if (currentFlowRate == 0) {
-          createNewFlow(contractaddress, flowRate);
+          if (currentFlowRate == 0) {
+            createNewFlow(contractaddress, flowRate);
+          }
         }
         // createNewFlow(contractaddress, flowRate);
       } else {
@@ -436,16 +467,14 @@ export const CreateFlow = () => {
           providerOrSigner: provider
         });
         console.log(myflow); // now getting the flow.
-        setCurrentFlowRate(Number(myflow.flowRate));
-        console.log(currentFlowRate)
-        setCurrentDeposit(myflow.deposit);
-
+        console.log(Number(myflow.flowRate))
+        return Number(myflow.flowRate);
       }
     } catch (error) {
       console.log(error);
     }
   }
-  
+
 
   const showModal = () => {
     setIsOpen(true);
@@ -453,6 +482,19 @@ export const CreateFlow = () => {
   const hideModal = () => {
     setIsOpen(false);
   };
+
+  var modal = document.getElementById("myModal");
+  var btn = document.getElementById("modalButton");
+
+  // const openModal = async (quesId) => {
+  //   await getAnswer(quesId);
+  //   modal.style.display = "block";
+  // }
+
+  async function openModal(quesId) {
+    await getAnswer(quesId);
+    modal.stype.display = "block";
+  }
 
   // UI code
   return (
@@ -470,42 +512,15 @@ export const CreateFlow = () => {
         </Card>
       )}
       <Form>
-        <FormGroup class="mb-3">
-          <FormControl
-            name="recipient"
-            value={recipient}
-            onChange={handleRecipientChange}
-            placeholder="Enter recipient address"
-          ></FormControl>
-        </FormGroup>
         <FormGroup className="mb-3">
           <FormControl
             name="flowRate"
             value={flowRate}
             onChange={handleFlowRateChange}
-            placeholder="Enter a flowRate in wei/second"
+            placeholder="Enter a bounty amount in wei/second"
           ></FormControl>
         </FormGroup>
-        
-        <CreateButton
-          onClick={() => {
-            setIsButtonLoading(true);
-            updateExistingFlow(contractaddress, flowRate);
-            setTimeout(() => {
-              setIsButtonLoading(false);
-            }, 1000);
-          }}>
-            Update Stream Flow
-        </CreateButton>
       </Form>
-
-      <div className="button">
-        <button onClick={getCurrentReceiver}>Get current Receiver</button>
-      </div>
-
-      <div className="button">
-        <button onClick={getAFlow}>Get A Flow</button>
-      </div>
 
       <div className="description">
         <div className="calculation">
@@ -516,30 +531,38 @@ export const CreateFlow = () => {
         </div>
       </div>
 
+      <div className="button">
+        <button onClick={getCurrentReceiver}>Get current Receiver</button>
+      </div>
+
+      <div className="button">
+        <button onClick={getAFlow}>Get A Flow</button>
+      </div>
+
       <Form>
         <FormGroup class="mb-3">
           <FormControl
-              name="doubt_heading"
-              value={doubt_heading}
-              onChange={handleDoubtHeading}
-              placeholder="Enter the doubt heading"
-            ></FormControl>
+            name="doubt_heading"
+            value={doubt_heading}
+            onChange={handleDoubtHeading}
+            placeholder="Enter the doubt heading"
+          ></FormControl>
         </FormGroup>
         <FormGroup class="mb-3">
           <FormControl
-              name="doubt_description"
-              value={doubt_description}
-              onChange={handleDoubtDescription}
-              placeholder="Enter the doubt description"
-            ></FormControl>
+            name="doubt_description"
+            value={doubt_description}
+            onChange={handleDoubtDescription}
+            placeholder="Enter the doubt description"
+          ></FormControl>
         </FormGroup>
         <FormGroup class="mb-3">
           <FormControl
-              name="doubt_due"
-              value={doubt_due}
-              onChange={handleDoubtDue}
-              placeholder="Enter the doubt due days"
-            ></FormControl>
+            name="doubt_due"
+            value={doubt_due}
+            onChange={handleDoubtDue}
+            placeholder="Enter the doubt due days"
+          ></FormControl>
         </FormGroup>
         {/* <CreateButton
           onClick={() => {
@@ -562,13 +585,13 @@ export const CreateFlow = () => {
             }, 1000);
           }}
         >
-          Post a doubt
+          Post doubt
         </CreateButton>
       </Form>
 
-      <div className="button">
+      {/* <div className="button">
         <button onClick={getDoubt}>Get the first doubt</button>
-      </div>
+      </div> */}
 
       <div className="answer">
         <button onClick={getAnswer}>Get the answer of first doubt</button>
@@ -577,9 +600,9 @@ export const CreateFlow = () => {
 
       {/* making modal */}
 
-      <button onClick = {showModal}>Display Modal</button>
-        
-      <Modal show={isOpen} onHide = {hideModal}>
+      <button onClick={showModal}>Display Modal</button>
+
+      <Modal show={isOpen} onHide={hideModal}>
         <Modal.Header>
           <Modal.Title>Modal title</Modal.Title>
         </Modal.Header>
@@ -596,9 +619,9 @@ export const CreateFlow = () => {
               ></FormControl>
               <FormControl
                 name="doubt_due"
-                value = {doubt_due}
+                value={doubt_due}
                 onChange={handleDoubtDue}
-                placeholder = "Enter the doubt number which you want to answer"></FormControl>
+                placeholder="Enter the doubt number which you want to answer"></FormControl>
             </FormGroup>
           </Form>
         </Modal.Body>
@@ -606,29 +629,47 @@ export const CreateFlow = () => {
         <Modal.Footer>
           <button onClick={hideModal}>Cancle</button>
           <CreateButton
-          onClick={() => {
-            setIsButtonLoading(true);
-            postAnswer();
-            setTimeout(() => {
-              setIsButtonLoading(false);
-            }, 1000);
-          }}
-        >
-          Post an Answer
-        </CreateButton>
+            onClick={() => {
+              setIsButtonLoading(true);
+              postAnswer();
+              setTimeout(() => {
+                setIsButtonLoading(false);
+              }, 1000);
+            }}
+          >
+            Post an Answer
+          </CreateButton>
         </Modal.Footer>
       </Modal>
 
       {allDoubts.map((doubt, index) => {
         return (
-          <div key = {index}>
-            <div>Address: {doubt.address}</div>
-            <div>Heading: {doubt.heading}</div>
-            <div>Description: {doubt.description}</div>
-            <div>Ques_ID: {doubt.quesId.toString()}</div>
+          <div className="card" key={index}>
+            <div className="container">
+              {/* <h3>Address: {doubt.address}</h3> */}
+              <h3><b>Heading: {doubt.heading}</b></h3>
+              <p>Description: {doubt.description}</p>
+              <p>Ques_ID: {doubt.quesId.toString()}</p>
+
+              <button id="modalButton" onClick={() => openModal(doubt.quesId)}>Open Modal</button>
+            </div>
           </div>
         )
       })}
+
+      <div id="myModal" className="modal">
+        <div className="modal-content">
+          {allAnswers.map((answer, index) => {
+            return (
+              <div key={index}>
+                <span class="close">&times;</span>
+                <p>Answer: {answer.ans}</p>
+              </div>
+            )
+          })}
+        </div>
+
+      </div>
 
     </div>
   );

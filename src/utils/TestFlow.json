@@ -153,6 +153,19 @@
 		"inputs": [
 			{
 				"internalType": "address",
+				"name": "_doubtPoster",
+				"type": "address"
+			}
+		],
+		"name": "setReceiver",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
 				"name": "owner",
 				"type": "address"
 			},
@@ -218,19 +231,6 @@
 		],
 		"name": "ReceiverChanged",
 		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_doubtPoster",
-				"type": "address"
-			}
-		],
-		"name": "setReceiver",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	},
 	{
 		"inputs": [
@@ -440,6 +440,38 @@
 		"inputs": [],
 		"name": "declareWinner",
 		"outputs": [],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "getFlowToSpecificAccount",
+		"outputs": [
+			{
+				"internalType": "int96",
+				"name": "",
+				"type": "int96"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getNetFlowFromContract",
+		"outputs": [
+			{
+				"internalType": "int96",
+				"name": "",
+				"type": "int96"
+			}
+		],
 		"stateMutability": "view",
 		"type": "function"
 	},
