@@ -77,3 +77,10 @@ div.fade.model.show {
   text-decoration: none;
   cursor: pointer;
 }
+.totalUpvotes, .upvoteArrow {
+  text-align: left;
+}
+
+CreateButton {
+  color: aqua;
+}

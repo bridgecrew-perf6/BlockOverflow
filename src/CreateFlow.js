@@ -112,12 +112,13 @@ export const CreateFlow = () => {
 
   var modal = document.getElementById("myModal");
   var modal2 = document.getElementById("myModal2")
-  var currentDoubtAnsweringId;
+
 
   const [recipient, setRecipient] = useState("");
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [flowRate, setFlowRate] = useState("");
   const [flowRateDisplay, setFlowRateDisplay] = useState("");
+  const [doubtFlowRateDisplay, setDoubtFlowRateDisplay] = useState("");
   const [currentAccount, setCurrentAccount] = useState("");
   const [doubt_heading, setDoubtHeading] = useState("");
   const [doubt_description, setDoubtDescription] = useState("");
@@ -126,6 +127,7 @@ export const CreateFlow = () => {
   const [isOpen, setIsOpen] = useState(false); // for the modal
   const [answerBody, setAnswerBody] = useState("");
   const [allAnswers, setAllAnswers] = useState([]);
+  const [currentDoubtAnsweringId, setCurrentDoubtAnsweringId] = useState(0);
 
 
   // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
@@ -219,7 +221,9 @@ export const CreateFlow = () => {
   const handleFlowRateChange = (e) => {
     setFlowRate(() => ([e.target.name] = e.target.value));
     let newFlowRateDisplay = calculateFlowRate(e.target.value);
-    setFlowRateDisplay(newFlowRateDisplay.toString());
+    setFlowRateDisplay(newFlowRateDisplay.toString()); // this is for monthly cost
+    let doubtFlowRate = (newFlowRateDisplay * doubt_due) / 30;
+    setDoubtFlowRateDisplay(doubtFlowRate.toString()); // this is cost per due days.
   };
 
   const handleDoubtHeading = (e) => {
@@ -406,12 +410,13 @@ export const CreateFlow = () => {
         // const transactionExist = await streamFlowContract.checkFlow(currentAccount);
         if (flowRate > 0) {
           if (currentFlowRate != 0) {
-            try {
-              let newflowrate = currentFlowRate + Number(flowRate);
-              await updateExistingFlow(contractaddress, newflowrate.toString());
-            } catch (error) {
-              console.log("Error for updating flow" + error);
-            }
+            // try {
+            //   let newflowrate = currentFlowRate + Number(flowRate);
+            //   await updateExistingFlow(contractaddress, newflowrate.toString());
+            // } catch (error) {
+            //   console.log("Error for updating flow" + error);
+            // }
+            console.log("Posting doubt without bounty, you already have a bounty doubt posted!");
           }
           if (currentFlowRate == 0) {
             createNewFlow(contractaddress, flowRate);
@@ -480,6 +485,33 @@ export const CreateFlow = () => {
     }
   }
 
+  async function upvoteCurrentAnswer(ansId) {
+    console.log(currentDoubtAnsweringId);
+    const { ethereum } = window;
+    try {
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const streamFlowContract = new ethers.Contract(
+          contractaddress,
+          contractAbi,
+          signer
+        );
+        const upvoteTxn = await streamFlowContract.upVote(
+          currentDoubtAnsweringId,
+          ansId,
+        );
+        console.log("Mining...", upvoteTxn.hash);
+        await upvoteTxn.wait();
+        console.log("Mined -- ", upvoteTxn.hash); // answer posted
+      } else {
+        console.log("Ethereum object not found");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
 
   const showModal = () => {
     setIsOpen(true);
@@ -489,12 +521,13 @@ export const CreateFlow = () => {
   };
 
   async function openModal(quesId) {
+    setCurrentDoubtAnsweringId(quesId);
     await getAnswer(quesId);
     modal.style.display = "block";
   }
 
   async function openModal2(quesId) {
-    currentDoubtAnsweringId = quesId;
+    setCurrentDoubtAnsweringId(quesId);
     console.log(currentDoubtAnsweringId);
     modal2.style.display = "block";
   }
@@ -522,36 +555,20 @@ export const CreateFlow = () => {
           )}`}
         </Card>
       )}
-      <Form>
-        <FormGroup className="mb-3">
-          <FormControl
-            name="flowRate"
-            value={flowRate}
-            onChange={handleFlowRateChange}
-            placeholder="Enter a bounty amount in wei/second"
-          ></FormControl>
-        </FormGroup>
-      </Form>
 
-      <div className="description">
-        <div className="calculation">
-          <p>Bounty flow</p>
-          <p>
-            <b>${flowRateDisplay !== " " ? flowRateDisplay : 0}</b> DAIx/month
-          </p>
-        </div>
-      </div>
 
-      <div className="button">
+
+      {/* <div className="button">
         <button onClick={getCurrentReceiver}>Get current Receiver</button>
-      </div>
+      </div> */}
 
-      <div className="button">
+      {/* <div className="button">
         <button onClick={getAFlow}>Get A Flow</button>
-      </div>
+      </div> */}
 
       <Form>
         <FormGroup class="mb-3">
+          <p>Enter the Doubt Heading</p>
           <FormControl
             name="doubt_heading"
             value={doubt_heading}
@@ -560,6 +577,7 @@ export const CreateFlow = () => {
           ></FormControl>
         </FormGroup>
         <FormGroup class="mb-3">
+          <p>Enter the Dount description</p>
           <FormControl
             name="doubt_description"
             value={doubt_description}
@@ -568,6 +586,7 @@ export const CreateFlow = () => {
           ></FormControl>
         </FormGroup>
         <FormGroup class="mb-3">
+          <p>Enter the due days until the bounty is valid</p>
           <FormControl
             name="doubt_due"
             value={doubt_due}
@@ -575,17 +594,27 @@ export const CreateFlow = () => {
             placeholder="Enter the doubt due days"
           ></FormControl>
         </FormGroup>
-        {/* <CreateButton
-          onClick={() => {
-            setIsButtonLoading(true);
-            createNewFlow(contractaddress, flowRate);
-            setTimeout(() => {
-              setIsButtonLoading(false);
-            }, 1000);
-          }}
-        >
-          Click to Create Your Stream
-        </CreateButton> */}
+
+        {/* displaying flowRate */}
+        <FormGroup className="mb-3">
+          <p>Enter the bounty of your doubt (optional)</p>
+          <FormControl
+            name="flowRate"
+            value={flowRate}
+            onChange={handleFlowRateChange}
+            placeholder="Enter a bounty amount in wei/second"
+          ></FormControl>
+        </FormGroup>
+
+        <div className="description">
+          <div className="calculation">
+            <p>Bounty flow Rate with Superfluid</p>
+            <p>
+              <b>${flowRateDisplay !== " " ? flowRateDisplay : 0}</b> DAIx/month<br></br>
+              <b>${doubtFlowRateDisplay !== " " ? doubtFlowRateDisplay : 0}</b> DAIx/{doubt_due} day(s)
+            </p>
+          </div>
+        </div>
 
         <CreateButton
           onClick={() => {
@@ -674,10 +703,14 @@ export const CreateFlow = () => {
         <div className="modal-content">
           <h3>Answers</h3>
           <span onClick={closeModal} id="closeSpanButton" className="close">&times;</span>
+
           {allAnswers.map((answer, index) => {
             return (
               <div key={index}>
-                <p>{answer.answerbody}</p>
+                <span className="totalUpvotes">{answer.upvotes}</span>&nbsp;
+                <button onClick={() => { upvoteCurrentAnswer(answer.ansId) }} className="upvoteArrow">&#8679;</button>
+                &nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+                <span className="answerBody">Answer {answer.ansId}:- {answer.answerbody}</span>
                 <hr></hr>
                 <br></br>
               </div>
