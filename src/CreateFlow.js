@@ -11,8 +11,8 @@ import {
 import Modal from "react-bootstrap/Modal";
 import "./CreateFlow.css";
 import { ethers } from "ethers";
-// import abi from "./utils/StreamFlow.json";
-import abi from "./utils/TestFlow.json";
+import abi from "./utils/StreamFlow.json";
+// import abi from "./utils/TestFlow.json";
 
 // let account;
 
@@ -130,11 +130,11 @@ export const CreateFlow = () => {
   const [currentDoubtAnsweringId, setCurrentDoubtAnsweringId] = useState(0);
 
 
-  // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
-  const contractaddress = "0xFE813CB523B648697637aa7Bf4d062018e2E74c3"; // this is only for testing. Use the above one while submitting the proejct.
+  const contractaddress = "0x9FC6B3F3666cBaF8E37948B05C4aB680Eb0988B4";
+  // const contractaddress = "0x0FE62c7A782c050Cafe8020Ce138c59657F04B48";
 
-  // const contractAbi = abi.abi; // use this while submitting the project.
-  const contractAbi = abi; // this is only for testing usign remix
+  const contractAbi = abi.abi; // use this while submitting the project.
+  // const contractAbi = abi; // this is only for testing usign remix
 
   const connectWallet = async () => {
     try {
