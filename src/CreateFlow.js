@@ -126,7 +126,7 @@ export const CreateFlow = () => {
 
 
   // const contractaddress = "0x42DAFAfe040af52B68b994d08A41DaB9Fb961806";
-  const contractaddress = "0x6CD0CEC942f944A11E00330c9Ad8B81F4cba75da"; // this is only for testing. Use the above one while submitting the proejct.
+  const contractaddress = "0xe8468e06F416cca809b48dd3158b3fb957D292B8"; // this is only for testing. Use the above one while submitting the proejct.
 
   // const contractAbi = abi.abi; // use this while submitting the project.
   const contractAbi = abi; // this is only for testing usign remix
@@ -432,7 +432,7 @@ export const CreateFlow = () => {
         const myflow = await sf.cfaV1.getFlow({
           superToken: "0x745861AeD1EEe363b4AaA5F1994Be40b1e05Ff90",
           sender: currentAccount.toString(),
-          receiver: "0x6CD0CEC942f944A11E00330c9Ad8B81F4cba75da",
+          receiver: contractaddress,
           providerOrSigner: provider
         });
         console.log(myflow); // now getting the flow.

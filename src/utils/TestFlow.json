@@ -153,19 +153,6 @@
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "newWinner",
-				"type": "address"
-			}
-		],
-		"name": "changeWinner",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
 				"name": "owner",
 				"type": "address"
 			},
@@ -241,24 +228,6 @@
 			}
 		],
 		"name": "setReceiver",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_doubtPoster",
-				"type": "address"
-			},
-			{
-				"internalType": "int96",
-				"name": "_flow",
-				"type": "int96"
-			}
-		],
-		"name": "updateFlowRecord",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -439,25 +408,6 @@
 				"internalType": "contract IConstantFlowAgreementV1",
 				"name": "cfa",
 				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_doubtPoster",
-				"type": "address"
-			}
-		],
-		"name": "checkFlow",
-		"outputs": [
-			{
-				"internalType": "int96",
-				"name": "",
-				"type": "int96"
 			}
 		],
 		"stateMutability": "view",
