@@ -109,6 +109,11 @@ async function updateExistingFlow(recipient, flowRate) {
 
 
 export const CreateFlow = () => {
+
+  var modal = document.getElementById("myModal");
+  var modal2 = document.getElementById("myModal2")
+  var currentDoubtAnsweringId;
+
   const [recipient, setRecipient] = useState("");
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [flowRate, setFlowRate] = useState("");
@@ -434,7 +439,7 @@ export const CreateFlow = () => {
         );
         const answerTxn = await streamFlowContract.answerDoubt(
           answerBody,
-          doubt_due,
+          currentDoubtAnsweringId,
         );
         console.log("Mining...", answerTxn.hash);
         await answerTxn.wait();
@@ -483,20 +488,23 @@ export const CreateFlow = () => {
     setIsOpen(false);
   };
 
-  var modal = document.getElementById("myModal");
-
-  // const openModal = async (quesId) => {
-  //   await getAnswer(quesId);
-  //   modal.style.display = "block";
-  // }
-
   async function openModal(quesId) {
     await getAnswer(quesId);
     modal.style.display = "block";
   }
 
+  async function openModal2(quesId) {
+    currentDoubtAnsweringId = quesId;
+    console.log(currentDoubtAnsweringId);
+    modal2.style.display = "block";
+  }
+
   function closeModal() {
     modal.style.display = "none";
+  }
+
+  function closeModal2() {
+    modal2.style.display = "none";
   }
 
   // UI code
@@ -654,7 +662,8 @@ export const CreateFlow = () => {
               <p>Description: {doubt.description}</p>
               <p>Ques_ID: {doubt.quesId.toString()}</p>
 
-              <button id="modalButton" onClick={() => openModal(doubt.quesId)}>Open Modal</button>
+              <button id="modalButton" onClick={() => openModal(doubt.quesId)}>Show Answers</button>
+              <button id="modalButton2" onClick={() => openModal2(doubt.quesId)}>Answer Question</button>
             </div>
           </div>
         )
@@ -663,16 +672,52 @@ export const CreateFlow = () => {
       {/* for answers */}
       <div id="myModal" className="modal">
         <div className="modal-content">
-        <span onClick={closeModal} id="closeSpanButton" className="close">&times;</span>
+          <h3>Answers</h3>
+          <span onClick={closeModal} id="closeSpanButton" className="close">&times;</span>
           {allAnswers.map((answer, index) => {
             return (
               <div key={index}>
-                <p>Answer: {answer.answerbody}</p>
+                <p>{answer.answerbody}</p>
+                <hr></hr>
+                <br></br>
               </div>
             )
           })}
         </div>
+      </div>
 
+      {/* Posting answers */}
+      <div id="myModal2" className="modal2">
+        <div className="modal-content">
+          <span onClick={closeModal2} id="closeSpanButton" className="close">&times;</span>
+          <h3>Type your answer</h3>
+          <Form>
+            <FormGroup className="mb-3">
+              <FormControl
+                name="answerBody"
+                value={answerBody}
+                onChange={handleAnswers}
+                placeholder="Enter the answer for this doubt"
+              ></FormControl>
+              {/* <FormControl
+                name="doubt_due"
+                value={doubt_due}
+                onChange={handleDoubtDue}
+                placeholder="Enter the doubt number which you want to answer"></FormControl> */}
+            </FormGroup>
+            <CreateButton
+              onClick={() => {
+                setIsButtonLoading(true);
+                postAnswer();
+                setTimeout(() => {
+                  setIsButtonLoading(false);
+                }, 1000);
+              }}
+            >
+              Post an Answer
+            </CreateButton>
+          </Form>
+        </div>
       </div>
 
     </div>

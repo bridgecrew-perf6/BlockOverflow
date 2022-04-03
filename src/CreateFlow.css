@@ -45,7 +45,7 @@ div.fade.model.show {
 .container {
   padding: 2px 16px;
 }
-.modal {
+.modal, .modal2 {
   display: none; /* Hidden by default */
   position: fixed; /* Stay in place */
   z-index: 1; /* Sit on top */
