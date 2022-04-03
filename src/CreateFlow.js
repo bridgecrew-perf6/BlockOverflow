@@ -484,7 +484,6 @@ export const CreateFlow = () => {
   };
 
   var modal = document.getElementById("myModal");
-  var btn = document.getElementById("modalButton");
 
   // const openModal = async (quesId) => {
   //   await getAnswer(quesId);
@@ -493,7 +492,11 @@ export const CreateFlow = () => {
 
   async function openModal(quesId) {
     await getAnswer(quesId);
-    modal.stype.display = "block";
+    modal.style.display = "block";
+  }
+
+  function closeModal() {
+    modal.style.display = "none";
   }
 
   // UI code
@@ -657,13 +660,14 @@ export const CreateFlow = () => {
         )
       })}
 
+      {/* for answers */}
       <div id="myModal" className="modal">
         <div className="modal-content">
+        <span onClick={closeModal} id="closeSpanButton" className="close">&times;</span>
           {allAnswers.map((answer, index) => {
             return (
               <div key={index}>
-                <span class="close">&times;</span>
-                <p>Answer: {answer.ans}</p>
+                <p>Answer: {answer.answerbody}</p>
               </div>
             )
           })}
